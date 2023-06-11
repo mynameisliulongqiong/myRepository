@@ -1,9 +1,27 @@
+/* 通用 */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+ul,
+li {
+    list-style: none;
+}
+
+body,
+html {
+    overflow-x: hidden;
+    overflow-y: auto;
+    user-select: none;
+}
+
+/* 通用结束 */
+
 /* body内容 */
 body {
     background: radial-gradient(300% 100% at top, #3b69af 10%, #75517d 40%, #e98296 65%, #f7eca7) fixed;
     background-size: cover;
-
-    user-select: none;
 }
 
 /* 容器 */
@@ -12,7 +30,7 @@ body {
 
     width: 1000px;
 
-    margin: 0 auto;
+    margin: 10px auto;
 
     border-radius: 10px;
     background-color: rgba(255, 255, 255, 0.1);
@@ -32,6 +50,8 @@ body {
 .header form {
     display: flex;
     align-items: center;
+
+    margin-top: 15px;
 }
 
 .header form svg.icon {
@@ -73,7 +93,7 @@ body {
     width: 420px;
     height: 155px;
 
-    top: 135px;
+    top: 140px;
     left: 250px;
 
     background-color: #fff;
@@ -146,6 +166,7 @@ body {
 
     width: 850px;
     min-height: 64vh;
+    margin-top: 15px;
 }
 
 .cityInfoList .noCity {
@@ -157,7 +178,11 @@ body {
     text-align: center;
 }
 
-.cityInfoList .cityInfoList-content {
+.cityInfoLi h4 {
+    margin: 15px 0;
+}
+
+.cityInfoLi .cityInfoList-content {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -200,7 +225,7 @@ body {
 .pagination_box .page {
     color: #fff;
 
-    background-image: linear-gradient(to right bottom, #03d827, #fce998, #c09520);
+    background-color: #e98296;
     background-position: 0 0;
 }
 
@@ -221,7 +246,7 @@ body {
 .pagination_box div:hover {
     color: #fff;
 
-    background-image: linear-gradient(to right bottom, #03d827, #fce998, #c09520);
+    background-color: #e98296;
     background-position: 0 0;
 
     /* 动画效果 */
