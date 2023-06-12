@@ -28,7 +28,7 @@ body {
 .container {
     position: relative;
 
-    width: 1000px;
+    max-width: 1000px;
 
     margin: 10px auto;
 
@@ -50,6 +50,7 @@ body {
 .header form {
     display: flex;
     align-items: center;
+    position: relative;
 
     margin-top: 15px;
 }
@@ -93,8 +94,8 @@ body {
     width: 420px;
     height: 155px;
 
-    top: 140px;
-    left: 250px;
+    top: 40px;
+    left: 12%;
 
     background-color: #fff;
 
