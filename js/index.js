@@ -1,7 +1,8 @@
 window.onload = function () {
-    getCityInfo(1);// 获取数据
+    initialPage(1);// 初始化页面
 }
 
+var data = '';// 创建一个变量，存储拿到的数据
 var cityArr = [];// 创建一个空数组，便于后面存数据调用
 var citySearch = document.querySelector('.searchCity');// 表单input
 var searchList = document.querySelector('.searchList');// 表单下拉列表元素
@@ -25,7 +26,93 @@ citySearch.addEventListener('focus', function () {
     }
 });
 
-// 初始化页面,渲染所有数据
+// 初始化页面
+function initialPage(page) {
+    // 先调用城市信息方法 请求到数据
+    const res = getCityInfo();
+    // 调用then方法 做数据处理
+    res.then(result => {
+        // 切割前100条数据
+        data = result.slice(0, 100);
+        // 渲染所有数据
+        init(data, page);
+        citySearch.addEventListener('input', e => {
+            // 初始化数据
+            cityArr = [];
+            searchList.innerHTML = '';
+            // 表单input输入框内是否有值
+            if (e.target.value) {
+                // 计算多少条数据
+                var count = 0;
+                // 设置下拉菜单样式显示
+                searchList.style.display = "block";
+                // 创建正则对象
+                let exp = new RegExp(e.target.value, 'i');
+                // 遍历result数据
+                for (let i = 0; i < data.length; i++) {
+                    // 通过正则对象test方法匹配到包含对应的数据
+                    if (exp.test(data[i].city) || exp.test(data[i].state)) {
+                        count++;
+                        // 添加到cityArr数组中
+                        cityArr.push(data[i]);
+                        // 渲染下拉菜单的数据
+                        searchList.innerHTML += `<li class="city-item" data-city="${data[i].city}" data-state="${data[i].state}">${data[i].city},${data[i].state}</span></li>`;
+                    }
+                }
+                // 渲染城市信息头数据
+                cityInte.innerHTML = `
+                        <svg t="1686123692337" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" p-id="3110" width="24" height="24">
+                            <path
+                                d="M912 128c0 81.3-12.4 151.7-37 210.9-24.6 59.2-66 118.2-124.2 176.6-26.5 26.2-58.3 54.9-95.5 86.2l-9.8 185.7c-0.6 5.3-3.3 9.5-7.8 12.8L449.6 909.7c-2.3 1.3-4.9 2-7.8 2-3.9 0-7.7-1.4-11.2-4.4L399.3 876c-4.2-4.5-5.6-9.8-3.9-15.7l41.5-135.1-137.8-137.7L164 629.1c-1 0.3-2.5 0.5-4.4 0.5-4.5 0-8.3-1.4-11.2-4.4L117 593.9c-5.6-6.2-6.4-12.6-2.5-19.1l109.7-188.1c3.3-4.5 7.5-7.2 12.8-7.8l185.7-9.8c31.3-37.2 60.1-69 86.2-95.5 61.4-61.1 119.8-103.2 175.4-126.4 55.5-23.2 125.9-34.9 211.1-34.9 4.5 0 8.4 1.5 11.7 4.6 3.2 3.2 4.9 6.9 4.9 11.1zM788.5 302.4c9.2-9.2 13.7-20.3 13.7-33.3 0-13.1-4.5-24.2-13.7-33.3-9.2-9.2-20.3-13.7-33.3-13.7-13.1 0-24.2 4.5-33.3 13.7-9.2 9.2-13.7 20.3-13.7 33.3 0 13.1 4.5 24.2 13.7 33.3 9.2 9.2 20.3 13.7 33.3 13.7s24.2-4.6 33.3-13.7z"
+                                fill="#333333" p-id="3111"></path>
+                        </svg>
+                        <span>&nbsp;&nbsp;关于<span class="cityName">${e.target.value}</span>的城市</span>`;
+                // 判断数据的计数是否为0
+                if (count == 0) {
+                    // 渲染数据
+                    searchList.innerHTML += `<li class="city-item item">暂无相关城市信息,请重新输入！</li>`;
+                    cityInfoList.innerHTML = `<section class='noCity'>暂无相关城市信息,请重新输入！</section>`;
+                }
+                // 点击时获取对应点击的页面并渲染
+                searchLiBtn(data, page);
+                // 渲染页面数据
+                cityInnerHTML(cityArr, page);
+            } else {
+                // 设置下拉菜单为隐藏
+                searchList.style.display = "none";
+                // 渲染所有数据
+                init(data, page);
+            }
+        });
+    });
+}
+
+// 获取城市信息数据
+function getCityInfo() {
+    return new Promise((resolve, reject) => {
+        // 创建xhr对象
+        const xhr = new XMLHttpRequest();
+        // 请求
+        xhr.open('GET', "https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json");
+        // 监听数据
+        xhr.addEventListener('loadend', () => {
+            // 判断是否有数据
+            if (xhr.readyState == 4) {
+                // 判断响应的状态码是否成功
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(JSON.parse(xhr.response));
+                } else {
+                    reject(new Error(xhr.response));
+                }
+            }
+        });
+        // 发送
+        xhr.send();
+    });
+}
+
+// 渲染所有数据
 function init(result, page) {
     // 判断搜索框内是否有值
     if (citySearch.value == "") {
@@ -37,7 +124,7 @@ function init(result, page) {
             // push到空数组cityArr里
             cityArr.push(result[i]);
         }
-
+        // 渲染城市标题头数据
         cityInte.innerHTML = `
                     <svg t="1686123692337" class="icon" viewBox="0 0 1024 1024" version="1.1"
                         xmlns="http://www.w3.org/2000/svg" p-id="3110" width="24" height="24">
@@ -49,82 +136,6 @@ function init(result, page) {
 
         cityInnerHTML(cityArr, page);// 调用函数 渲染所有数据
     }
-}
-
-// 获取数据
-function getCityInfo(page) {
-    // 调用封装的axios函数 发送请求
-    axios({
-        url: 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json'
-    }).then(result => {
-        // 取前100条数据
-        result = result.slice(0, 100);
-
-        // 初始化页面
-        init(result, page);
-
-        // 表单的input输入事件
-        citySearch.addEventListener('input', e => {
-            // 初始化数据
-            cityArr = [];
-            searchList.innerHTML = '';
-
-            // 表单input输入框内是否有值
-            if (e.target.value) {
-                // 设置下拉菜单样式显示
-                searchList.style.display = "block";
-
-                // 创建正则对象
-                let exp = new RegExp(e.target.value, 'i');
-
-                // 计算多少条数据
-                var count = 0;
-
-                // 遍历result数据
-                for (let i = 0; i < result.length; i++) {
-                    // 通过正则对象test方法匹配到包含对应的数据
-                    if (exp.test(result[i].city) || exp.test(result[i].state)) {
-                        count++;
-
-                        // 添加到cityArr数组中
-                        cityArr.push(result[i]);
-
-                        // 渲染下拉菜单的数据
-                        searchList.innerHTML += `<li class="city-item" data-city="${result[i].city}" data-state="${result[i].state}">${result[i].city},${result[i].state}</span></li>`;
-                    }
-                }
-
-                // 点击时获取对应点击的页面并渲染
-                searchLiBtn(result, page);
-
-                // 渲染页面数据
-                cityInnerHTML(cityArr, page);
-                cityInte.innerHTML = `
-                    <svg t="1686123692337" class="icon" viewBox="0 0 1024 1024" version="1.1"
-                        xmlns="http://www.w3.org/2000/svg" p-id="3110" width="24" height="24">
-                        <path
-                            d="M912 128c0 81.3-12.4 151.7-37 210.9-24.6 59.2-66 118.2-124.2 176.6-26.5 26.2-58.3 54.9-95.5 86.2l-9.8 185.7c-0.6 5.3-3.3 9.5-7.8 12.8L449.6 909.7c-2.3 1.3-4.9 2-7.8 2-3.9 0-7.7-1.4-11.2-4.4L399.3 876c-4.2-4.5-5.6-9.8-3.9-15.7l41.5-135.1-137.8-137.7L164 629.1c-1 0.3-2.5 0.5-4.4 0.5-4.5 0-8.3-1.4-11.2-4.4L117 593.9c-5.6-6.2-6.4-12.6-2.5-19.1l109.7-188.1c3.3-4.5 7.5-7.2 12.8-7.8l185.7-9.8c31.3-37.2 60.1-69 86.2-95.5 61.4-61.1 119.8-103.2 175.4-126.4 55.5-23.2 125.9-34.9 211.1-34.9 4.5 0 8.4 1.5 11.7 4.6 3.2 3.2 4.9 6.9 4.9 11.1zM788.5 302.4c9.2-9.2 13.7-20.3 13.7-33.3 0-13.1-4.5-24.2-13.7-33.3-9.2-9.2-20.3-13.7-33.3-13.7-13.1 0-24.2 4.5-33.3 13.7-9.2 9.2-13.7 20.3-13.7 33.3 0 13.1 4.5 24.2 13.7 33.3 9.2 9.2 20.3 13.7 33.3 13.7s24.2-4.6 33.3-13.7z"
-                            fill="#333333" p-id="3111"></path>
-                    </svg>
-                    <span>&nbsp;&nbsp;关于<span class="cityName">${e.target.value}</span>的城市</span>`;
-
-                // 判断数据的计数是否为0
-                if (count == 0) {
-                    // 渲染数据
-                    searchList.innerHTML += `<li class="city-item item">暂无相关城市信息,请重新输入！</li>`;
-                    cityInfoList.innerHTML = `<section class='noCity'>暂无相关城市信息,请重新输入！</section>`;
-                }
-            } else {
-                // 设置下拉菜单为隐藏
-                searchList.style.display = "none";
-                // 初始化数据
-                init(result, page);
-            }
-        });
-    }).catch(error => {
-        // 捕捉错误信息
-        console.log(error);
-    });
 }
 
 // 点击下拉菜单中的其中一项时获取并渲染数据
@@ -167,6 +178,7 @@ function searchLiBtn(result, page) {
 
 // 渲染获取到的数据，分页
 function cityInnerHTML(result, page) {
+    // 初始化
     cityInfoList.innerHTML = '';
     pagination.innerHTML = '';
 
@@ -174,7 +186,7 @@ function cityInnerHTML(result, page) {
     // 通过变量来达到渲染下一页的数据
     var pagenum = (page - 1) * 8;
     // 判断有多少页
-    var pageContent = Math.ceil(result.length / 8); //
+    var pageContent = Math.ceil(result.length / 8);
 
     // 当数据只有一条时
     if (result.length == 1) {
