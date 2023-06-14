@@ -26,41 +26,53 @@ citySearch.addEventListener('focus', function () {
     }
 });
 
+
 // 初始化页面
-function initialPage(page) {
-    // 先调用城市信息方法 请求到数据
-    const res = getCityInfo();
-    // 调用then方法 做数据处理
-    res.then(result => {
-        // 切割前100条数据
-        data = result.slice(0, 100);
+const initialPage = async (page) => {
+    // 创建常量存储请求到的数据 调用城市信息函数 
+    const res = await getCityInfo();
+    try {
+        // 用data变量存储常量res数据 做前100条的数据处理
+        data = res.slice(0, 100);
+
         // 渲染所有数据
         init(data, page);
-        citySearch.addEventListener('input', e => {
-            // 初始化数据
-            cityArr = [];
-            searchList.innerHTML = '';
-            // 表单input输入框内是否有值
-            if (e.target.value) {
-                // 计算多少条数据
-                var count = 0;
-                // 设置下拉菜单样式显示
-                searchList.style.display = "block";
-                // 创建正则对象
-                let exp = new RegExp(e.target.value, 'i');
-                // 遍历result数据
-                for (let i = 0; i < data.length; i++) {
-                    // 通过正则对象test方法匹配到包含对应的数据
-                    if (exp.test(data[i].city) || exp.test(data[i].state)) {
-                        count++;
-                        // 添加到cityArr数组中
-                        cityArr.push(data[i]);
-                        // 渲染下拉菜单的数据
-                        searchList.innerHTML += `<li class="city-item" data-city="${data[i].city}" data-state="${data[i].state}">${data[i].city},${data[i].state}</span></li>`;
-                    }
-                }
-                // 渲染城市信息头数据
-                cityInte.innerHTML = `
+
+        // 添加表单输入事件
+        citySearch.addEventListener('input', (e) => {
+            onInput(e, 1);
+        });
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// 表单输入事件回调函数
+function onInput(e, page) {
+    // 初始化数据
+    cityArr = [];
+    searchList.innerHTML = '';
+    // 表单input输入框内是否有值
+    if (e.target.value) {
+        // 计算多少条数据
+        var count = 0;
+        // 设置下拉菜单样式显示
+        searchList.style.display = "block";
+        // 创建正则对象
+        let exp = new RegExp(e.target.value, 'i');
+        // 遍历result数据
+        for (let i = 0; i < data.length; i++) {
+            // 通过正则对象test方法匹配到包含对应的数据
+            if (exp.test(data[i].city) || exp.test(data[i].state)) {
+                count++;
+                // 添加到cityArr数组中
+                cityArr.push(data[i]);
+                // 渲染下拉菜单的数据
+                searchList.innerHTML += `<li class="city-item" data-city="${data[i].city}" data-state="${data[i].state}">${data[i].city},${data[i].state}</span></li>`;
+            }
+        }
+        // 渲染城市信息头数据
+        cityInte.innerHTML = `
                         <svg t="1686123692337" class="icon" viewBox="0 0 1024 1024" version="1.1"
                             xmlns="http://www.w3.org/2000/svg" p-id="3110" width="24" height="24">
                             <path
@@ -68,24 +80,22 @@ function initialPage(page) {
                                 fill="#333333" p-id="3111"></path>
                         </svg>
                         <span>&nbsp;&nbsp;关于<span class="cityName">${e.target.value}</span>的城市</span>`;
-                // 判断数据的计数是否为0
-                if (count == 0) {
-                    // 渲染数据
-                    searchList.innerHTML += `<li class="city-item item">暂无相关城市信息,请重新输入！</li>`;
-                    cityInfoList.innerHTML = `<section class='noCity'>暂无相关城市信息,请重新输入！</section>`;
-                }
-                // 点击时获取对应点击的页面并渲染
-                searchLiBtn(data, page);
-                // 渲染页面数据
-                cityInnerHTML(cityArr, page);
-            } else {
-                // 设置下拉菜单为隐藏
-                searchList.style.display = "none";
-                // 渲染所有数据
-                init(data, page);
-            }
-        });
-    });
+        // 判断数据的计数是否为0
+        if (count == 0) {
+            // 渲染数据
+            searchList.innerHTML += `<li class="city-item item">暂无相关城市信息,请重新输入！</li>`;
+            cityInfoList.innerHTML = `<section class='noCity'>暂无相关城市信息,请重新输入！</section>`;
+        }
+        // 点击时获取对应点击的页面并渲染
+        searchLiBtn(data, page);
+        // 渲染页面数据
+        cityInnerHTML(cityArr, page);
+    } else {
+        // 设置下拉菜单为隐藏
+        searchList.style.display = "none";
+        // 渲染所有数据
+        init(data, page);
+    }
 }
 
 // 获取城市信息数据
@@ -95,6 +105,8 @@ function getCityInfo() {
         const xhr = new XMLHttpRequest();
         // 请求
         xhr.open('GET', "https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json");
+        // 发送
+        xhr.send();
         // 监听数据
         xhr.addEventListener('loadend', () => {
             // 判断是否有数据
@@ -107,8 +119,6 @@ function getCityInfo() {
                 }
             }
         });
-        // 发送
-        xhr.send();
     });
 }
 
